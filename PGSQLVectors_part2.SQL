@@ -1,4 +1,4 @@
-/*
+/*****************************************************************************************************
 CREATE EXTENSION IF NOT EXISTS azure_ai;
 CREATE EXTENSION IF NOT EXISTS pg_diskann;
 OR
@@ -8,9 +8,9 @@ ALTER EXTENSION azure_ai UPDATE;
 SELECT azure_ai.set_setting('azure_openai.endpoint','https://<endpoint>.openai.azure.com'); 
 SELECT azure_ai.set_setting('azure_openai.subscription_key', '<API Key>'); 
 
-*/
+SELECT azure_ai.version();
 
---select azure_ai.version();
+******************************************************************************************************/
 
 -- Create tables and populate data
 DROP TABLE IF EXISTS conference_session_embeddings;
@@ -51,6 +51,9 @@ VALUES
     ,('Data meets chaos to inspire change'
     ,'Blending abstract concepts with data-driven insights to inspire transformative ideas'
     , 50, current_timestamp)
+    ,('The Terminator'
+    ,'A robot from the future comes to change the past'
+    , 50, current_timestamp)
 ;
 
 -- Insert embeddings 
@@ -65,18 +68,21 @@ LEFT OUTER JOIN
 WHERE
     e.session_id IS NULL;
 
-/*
+/******************************************************************************************************
 Create a DiskANN index
 
 DiskANN is an algorithm for approximate nearest neighbour (ANN) search on large vector datasets.
 It uses a graph-based index with disk storage, reducing RAM requirements while keeping search fast.
 Designed for billions of vectors, making it ideal for large-scale recommendation and semantic search.
 In pgvector, DiskANN enables efficient similarity search using cosine or L2 distance on vector columns.
-*/
+******************************************************************************************************/
 CREATE INDEX ON conference_session_embeddings USING diskann (session_embedding vector_cosine_ops);
+
 
 -- Retrieve top similarity match
 SELECT
+    cosine_distance(e.session_embedding, azure_openai.create_embeddings('text-embedding-3-small', 'Session to learn about the cloud')::vector) AS cosine_dist,
+    e.session_embedding <=> azure_openai.create_embeddings('text-embedding-3-small', 'Session to learn about the cloud')::vector,
     c.*,
     e.*
 FROM
@@ -84,5 +90,18 @@ FROM
 INNER JOIN
     conference_sessions c ON c.session_id = e.session_id
 ORDER BY
-    e.session_embedding <=> azure_openai.create_embeddings('text-embedding-3-small', 'Session to learn about the cloud')::vector
-LIMIT 1;
+    e.session_embedding <=> azure_openai.create_embeddings('text-embedding-3-small', 'Session to learn about the cloud')::vector;
+
+
+-- Retrieve top similarity match
+SELECT
+    cosine_distance(e.session_embedding, azure_openai.create_embeddings('text-embedding-3-small', 'Session about the human experience and emotions')::vector) AS cosine_dist,
+    e.session_embedding <=> azure_openai.create_embeddings('text-embedding-3-small', 'Session about the human experience and emotions')::vector,
+    c.*,
+    e.*
+FROM
+    conference_session_embeddings e
+INNER JOIN
+    conference_sessions c ON c.session_id = e.session_id
+ORDER BY
+    e.session_embedding <=> azure_openai.create_embeddings('text-embedding-3-small', 'Session about the human experience and emotions')::vector;
