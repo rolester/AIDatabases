@@ -3,4 +3,3 @@ SELECT azure_ai.generate('Tell me which are the top databases for AI on Azure, i
 
 SELECT session_abstract, azure_ai.generate('make this more exciting' || session_abstract) new_abstract
 FROM conference_sessions;
-
