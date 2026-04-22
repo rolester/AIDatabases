@@ -21,7 +21,10 @@ OPENAI_API_ENDPOINT = "https://swedenopenairal.openai.azure.com/"
 OPENAI_API_VERSION = "2024-02-01"
 OPENAI_API_KEY = config['keys']['AzurekeySweden']
 
-client = AzureOpenAI(api_key=OPENAI_API_KEY, azure_endpoint=OPENAI_API_ENDPOINT, api_version=OPENAI_API_VERSION,)
+from azure.identity import DefaultAzureCredential
+
+#client = AzureOpenAI(api_key=OPENAI_API_KEY, azure_endpoint=OPENAI_API_ENDPOINT, api_version=OPENAI_API_VERSION,)
+client = AzureOpenAI(azure_endpoint=OPENAI_API_ENDPOINT, api_version=OPENAI_API_VERSION,azure_ad_token=DefaultAzureCredential().get_token("https://cognitiveservices.azure.com/.default").token)
 
 from azure.identity import DefaultAzureCredential
 from azure.identity import ClientSecretCredential, DefaultAzureCredential
@@ -66,7 +69,7 @@ def searchdatabase(query, num_results=10):
     return res
 
 
-st.title("💬 War and Peace Bot - search base GPT model or using pinecone search War and Peace")
+st.title("💬 War and Peace Bot - search base GPT model or using CosmosDB search War and Peace")
 if "messages" not in st.session_state:
     st.session_state["messages"] = [{"role": "assistant", "content": "How may I help you? Please start typing!"}]
 

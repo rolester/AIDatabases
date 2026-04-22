@@ -71,3 +71,4 @@ Context: ' || top_sections_for_q_json('Who gets married?', 40)::text, 'gpt-4.1-m
 /*
 The people who get married are: Berg and Véra; Natásha and her husband (name not specified); Prince Andrew (implied to marry); and Hélène is considering marriage with one of two men (a prince and a magnate), but it is not explicitly stated whom she marries.
 */
+

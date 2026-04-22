@@ -56,6 +56,7 @@ VALUES
     , 50, current_timestamp)
 ;
 
+
 -- Insert embeddings 
 INSERT INTO conference_session_embeddings
     (session_id, session_embedding)

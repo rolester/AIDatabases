@@ -1,5 +1,9 @@
 --View the plan demo
 
+GO
+SET SHOWPLAN_XML ON
+GO
+
 --SELECT TOP 10 * FROM Alice2
 
 SELECT COUNT(*) FROM AliceVectors
@@ -20,26 +24,28 @@ exec @retval = sp_invoke_external_rest_endpoint
     @payload = @payload,
     @response = @response output;
 
-	drop table if exists #t;
-	select 
-		cast([key] as int) as [vector_value_id],
-		cast([value] as float) as [AliceVectors]
-	into    
-		#t
-	from 
-		openjson(@response, '$.result.data[0].embedding')
+drop table if exists #t;
+select 
+	cast([key] as int) as [vector_value_id],
+	cast([value] as float) as [AliceVectors]
+into    
+	#t
+from 
+	openjson(@response, '$.result.data[0].embedding')
 
-	drop table if exists #results;
+select	top(@NumResults)
+		v2.PID, 
+		sum(v1.[AliceVectors] * v2.[AliceVectors]) / 
+			(
+				sqrt(sum(v1.[AliceVectors] * v1.[AliceVectors])) 
+				* 
+				sqrt(sum(v2.[AliceVectors] * v2.[AliceVectors]))
+			) as cosine_distance
+FROM		#t v1
+			INNER JOIN [dbo].[AliceVectors] v2 on v1.vector_value_id = v2.vector_value_id
+GROUP BY	v2.PID
+ORDER BY	cosine_distance desc;
 
-	select	top(1)
-			v2.PID, 
-			sum(v1.[AliceVectors] * v2.[AliceVectors]) / 
-				(
-					sqrt(sum(v1.[AliceVectors] * v1.[AliceVectors])) 
-					* 
-					sqrt(sum(v2.[AliceVectors] * v2.[AliceVectors]))
-				) as cosine_distance
-	FROM		#t v1
-				INNER JOIN [dbo].[AliceVectors] v2 on v1.vector_value_id = v2.vector_value_id
-	GROUP BY	v2.PID
-	ORDER BY	cosine_distance desc;
+GO
+SET SHOWPLAN_XML OFF
+GO

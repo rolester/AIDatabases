@@ -1,3 +1,4 @@
+
 DECLARE @inputText Varchar(500) = 'Is the cat nice?'
 DECLARE @NumResults INT = 4
 

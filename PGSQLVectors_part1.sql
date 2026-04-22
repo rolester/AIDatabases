@@ -38,7 +38,7 @@ FROM tblvector AS A
 CROSS JOIN tblvector AS B
 LIMIT 5;
 
--- Calculate the cosine distance between all pairs of vectors in the table
+-- Calculate the Euclidean distance between all pairs of vectors in the table
 SELECT a.embedding, b.embedding, l2_distance(a.embedding, b.embedding) AS Euclidean_distance
 FROM tblvector AS A
 CROSS JOIN tblvector AS B
